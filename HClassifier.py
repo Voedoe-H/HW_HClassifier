@@ -256,6 +256,20 @@ def transformInequationSystem(Ieq,Z):
     A_prime_C_b = A_prime_C + Ieq[1] # b + A'c
     return (A_prime,A_prime_C_b)
 
+def float_to_q17_14(val):
+    return int(round(val * (1 << 14)))  # Multiply by 2^14
+
+def print_verilog_matrix_and_vector(matrix, vector, name_prefix="matrix"):
+    print(f"// Matrix {name_prefix}")
+    for i, row in enumerate(matrix):
+        for j, val in enumerate(row):
+            fixed_val = float_to_q17_14(val)
+            print(f"{name_prefix}[{i}][{j}] = 32'sd{fixed_val};")
+    print(f"\n// Vector {name_prefix}_vec")
+    for i, val in enumerate(vector):
+        fixed_val = float_to_q17_14(val)
+        print(f"{name_prefix}_vec[{i}] = 32'sd{fixed_val};")
+
 ##############################################
 def SigmaDeltaClassificationUsecase():
     """
@@ -434,20 +448,16 @@ def SigmaDeltaClassificationUsecase():
     cs_negchi2 = (AnegChi2,bnegChi2)
 
     converted1 = transformInequationSystem(cs_chi5,Z)
-    print(f"Concerted 1 Matrix: {converted1[0]}")
-    print(f"Converted 1 Vector: {converted1[1]}")
+    print_verilog_matrix_and_vector(converted1[0], converted1[1], name_prefix="chi5")
 
     converted2 = transformInequationSystem(cs_negchi5,Z)
-    print(f"Converted 2 Matrix: {converted2[0]}")
-    print(f"Converted 2 Vector: {converted2[1]}")
+    print_verilog_matrix_and_vector(converted2[0], converted2[1], name_prefix="negchi5")
 
     converted3 = transformInequationSystem(cs_chi2,Zp)
-    print(f"Converted 3 Matrix: {converted3[0]}")
-    print(f"Converted 3 Vector: {converted3[1]}")
-    
+    print_verilog_matrix_and_vector(converted3[0], converted3[1], name_prefix="chi2")
+
     converted4 = transformInequationSystem(cs_negchi2,Zp)
-    print(f"Covnerted 4 Matrix: {converted4[0]}")
-    print(f"Converted 4 Vevtor: {converted4[1]}0")
+    print_verilog_matrix_and_vector(converted4[0], converted4[1], name_prefix="negchi2")
 
     C,SPE,LPE,N = LoadSigmaDeltaTransitions()
 
