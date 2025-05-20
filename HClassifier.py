@@ -270,6 +270,37 @@ def print_verilog_matrix_and_vector(matrix, vector, name_prefix="matrix"):
         fixed_val = float_to_q17_14(val)
         print(f"{name_prefix}_vec[{i}] = 32'sd{fixed_val};")
 
+def print_verilog_function_rom(matrix, vector=None, name_prefix="matrix"):
+    print(f"function automatic signed [31:0] get_{name_prefix};")
+    print("    input integer row, col;")
+    print("    begin")
+    print("        case (row)")
+    for i, row in enumerate(matrix):
+        print(f"            {i}: case (col)")
+        for j, val in enumerate(row):
+            fixed_val = float_to_q17_14(val)
+            print(f"                {j}: get_{name_prefix} = 32'sd{fixed_val};")
+        print("                default: get_{name_prefix} = 32'sd0;")
+        print("            endcase")
+    print("            default: get_{name_prefix} = 32'sd0;")
+    print("        endcase")
+    print("    end")
+    print("endfunction\n")
+
+    if vector is not None:
+        print(f"function automatic signed [31:0] get_{name_prefix}_vec;")
+        print("    input integer index;")
+        print("    begin")
+        print("        case (index)")
+        for i, val in enumerate(vector):
+            fixed_val = float_to_q17_14(val)
+            print(f"            {i}: get_{name_prefix}_vec = 32'sd{fixed_val};")
+        print(f"            default: get_{name_prefix}_vec = 32'sd0;")
+        print("        endcase")
+        print("    end")
+        print("endfunction\n")
+
+
 ##############################################
 def SigmaDeltaClassificationUsecase():
     """
@@ -448,16 +479,16 @@ def SigmaDeltaClassificationUsecase():
     cs_negchi2 = (AnegChi2,bnegChi2)
 
     converted1 = transformInequationSystem(cs_chi5,Z)
-    print_verilog_matrix_and_vector(converted1[0], converted1[1], name_prefix="chi5")
+    print_verilog_function_rom(converted1[0], converted1[1], name_prefix="chi5")
 
     converted2 = transformInequationSystem(cs_negchi5,Z)
-    print_verilog_matrix_and_vector(converted2[0], converted2[1], name_prefix="negchi5")
+    #print_verilog_matrix_and_vector(converted2[0], converted2[1], name_prefix="negchi5")
 
     converted3 = transformInequationSystem(cs_chi2,Zp)
-    print_verilog_matrix_and_vector(converted3[0], converted3[1], name_prefix="chi2")
+    #print_verilog_matrix_and_vector(converted3[0], converted3[1], name_prefix="chi2")
 
     converted4 = transformInequationSystem(cs_negchi2,Zp)
-    print_verilog_matrix_and_vector(converted4[0], converted4[1], name_prefix="negchi2")
+    #print_verilog_matrix_and_vector(converted4[0], converted4[1], name_prefix="negchi2")
 
     C,SPE,LPE,N = LoadSigmaDeltaTransitions()
 
